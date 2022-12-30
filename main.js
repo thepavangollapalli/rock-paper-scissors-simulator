@@ -1,8 +1,8 @@
 // setup canvas
-
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
+// TODO reside canvas when window is resized
 const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
@@ -60,7 +60,7 @@ class Item {
     this.velY = velY;
     this.size = size;
     this.type = type;
-    // need to calculate midpoint of drawn shape
+    // store midpoint of drawn shape
     this.centerX = this.x + (this.size / 2);
     this.centerY = this.y + (this.size / 2);
   }
@@ -75,7 +75,6 @@ class Item {
     }
   }
 
-  // centerX/centerY?
   update() {
     if ((this.centerX + this.size >= width) || (this.centerX - this.size <= 0)) {
       this.velX = -(this.velX);
@@ -100,7 +99,7 @@ class Item {
 
         // stretch: could use fancier collision detection using SAT (separating axis theorem)
         if (distance < this.size) {
-          // should we implement bounce?
+          // TODO should we implement bounce?
           // this.velX = -(this.velX);
           // this.velY = -(this.velY);
 
@@ -131,7 +130,7 @@ class Item {
   }
 }
 
-// need global state object
+// TODO need global state object
 const items = [];
 
 const gamePrefs = {
@@ -172,8 +171,6 @@ function createFromPrefs(gamePrefs) {
   }
 }
 
-createFromPrefs(gamePrefs);
-
 function loop() {
   // Redraw the canvas each time with partial opacity
   // to see the last few positions of items. this allows
@@ -202,4 +199,7 @@ function loop() {
   }
 }
 
+
+// Start game
+createFromPrefs(gamePrefs);
 loop();
