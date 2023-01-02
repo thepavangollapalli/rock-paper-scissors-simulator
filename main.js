@@ -1,8 +1,13 @@
+const windowState = {
+  items: [],
+  previousAnimationRequestId: 0,
+};
+
 // setup canvas
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-// TODO reside canvas when window is resized
+// TODO resize canvas when window is resized
 const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
@@ -91,17 +96,18 @@ class Item {
   }
 
   collisionDetect() {
+    const items = windowState.items;
     for (const item of items) {
       if (this !== item) {
         const dx = this.centerX - item.centerX;
         const dy = this.centerY - item.centerY;
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        // stretch: could use fancier collision detection using SAT (separating axis theorem)
+        // stretch: use sphere trees for better performance
         if (distance < this.size) {
           // TODO should we implement bounce?
-          // this.velX = -(this.velX);
-          // this.velY = -(this.velY);
+          this.velX = -(this.velX);
+          this.velY = -(this.velY);
 
           // rules for determining type after collision
           if (this.type == "rock" && item.type == "paper") {
@@ -130,19 +136,11 @@ class Item {
   }
 }
 
-// TODO need global state object
-const items = [];
+function createFromPrefs(simPrefs) {
+  // reset any previous game state
+  windowState.items = [];
+  cancelAnimationFrame(windowState.previousAnimationRequestId);
 
-const gamePrefs = {
-  numRock: 10,
-  numPaper: 10,
-  numScissors: 10,
-  size: 30,
-  velocityX: null, // null velocity will be given a random value per item
-  velocityY: null, // null velocity will be given a random value per item
-};
-
-function createFromPrefs(gamePrefs) {
   const {
       numRock: numRock, 
       numPaper: numPaper,
@@ -150,23 +148,23 @@ function createFromPrefs(gamePrefs) {
       size: size,
       velocityX: velocityX,
       velocityY: velocityY,
-  } = gamePrefs;
+  } = simPrefs;
   const itemsToCreate = {
     "rock": numRock,
     "paper": numPaper,
     "scissors": numScissors
   }
-  for (const key in itemsToCreate) {
-    for (let i = 0; i < itemsToCreate[key]; i++) {
+  for (const itemType in itemsToCreate) {
+    for (let i = 0; i < itemsToCreate[itemType]; i++) {
       const item = new Item(
         random(0 + size, width - size),
         random(0 + size, height - size),
         velocityX ? velocityX : random(-3, 3),
         velocityY ? velocityY : random(-3, 3),
         size,
-        key
+        itemType
       )
-      items.push(item);
+      windowState.items.push(item);
     }
   }
 }
@@ -177,6 +175,8 @@ function loop() {
   // for us to get "trails" for each item
   ctx.fillStyle = "rgba(255,255,255,0.3)"
   ctx.fillRect(0, 0, width, height);
+
+  const items = windowState.items;
 
   for (const item of items) {
     item.draw();
@@ -193,13 +193,57 @@ function loop() {
     for (const item of items) {
       item.draw();
     }
+    const winnerDisplay = document.querySelector("#sim-winner");
+    const capitalizedType = items[0].type[0].toUpperCase() + items[0].type.slice(1);
+    winnerDisplay.textContent = capitalizedType;
     return;
   } else {
-    requestAnimationFrame(loop);
+    windowState.previousAnimationRequestId = requestAnimationFrame(loop);
   }
 }
 
+function beginSimulation() {
+  const numRock = parseInt(getRockSlider().value);
+  const numPaper = parseInt(getPaperSlider().value);
+  const numScissors = parseInt(getScissorsSlider().value);
+  const simPrefs = {
+    numRock: numRock,
+    numPaper: numPaper,
+    numScissors: numScissors,
+    size: 30,
+    velocityX: null, // null velocities will be given a random value per item
+    velocityY: null,
+  };
+  createFromPrefs(simPrefs);
+  loop();
+}
 
-// Start game
-createFromPrefs(gamePrefs);
-loop();
+// DOM helpers and listeners
+
+function getRockSlider() {
+  return document.querySelector("input[name='num_rock']");
+}
+
+function getPaperSlider() {
+  return document.querySelector("input[name='num_paper']");
+}
+
+function getScissorsSlider() {
+  return document.querySelector("input[name='num_scissors']");
+}
+
+const startSimForm = document.getElementById("start-sim-form");
+startSimForm.addEventListener("submit",(event) => {
+  if (event.submitter.name === "start") {
+    beginSimulation();
+  } else if (event.submitter.name === "random") {
+    getRockSlider().value = random(0, 50);
+    getPaperSlider().value = random(0, 50);
+    getScissorsSlider().value = random(0, 50);
+  } else if (event.submitter.name === "balanced") {
+    getRockSlider().value = 25;
+    getPaperSlider().value = 25;
+    getScissorsSlider().value = 25;
+  }
+  event.preventDefault();
+})
