@@ -1,6 +1,7 @@
 const windowState = {
   items: [],
   previousAnimationRequestId: 0,
+  numCollisions: 0,
 };
 
 // setup canvas
@@ -105,6 +106,7 @@ class Item {
 
         // stretch: use sphere trees for better performance
         if (distance < this.size) {
+          windowState.numCollisions++;
           // TODO should we implement bounce?
           this.velX = -(this.velX);
           this.velY = -(this.velY);
@@ -139,6 +141,7 @@ class Item {
 function createFromPrefs(simPrefs) {
   // reset any previous game state
   windowState.items = [];
+  windowState.numCollisions = 0;
   cancelAnimationFrame(windowState.previousAnimationRequestId);
 
   const {
@@ -196,6 +199,8 @@ function loop() {
     const winnerDisplay = document.querySelector("#sim-winner");
     const capitalizedType = items[0].type[0].toUpperCase() + items[0].type.slice(1);
     winnerDisplay.textContent = capitalizedType;
+    const numCollisionsDisplay = document.querySelector("#num-collisions");
+    numCollisionsDisplay.textContent = windowState.numCollisions;
     return;
   } else {
     windowState.previousAnimationRequestId = requestAnimationFrame(loop);
