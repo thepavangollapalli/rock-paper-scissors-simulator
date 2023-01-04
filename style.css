@@ -1,28 +1,72 @@
 html, body{
   margin: 0;
+  height: 100%;
+  width: 100%;
 }
 
 html {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.container {
   height: 100%;
-}
-
-body {
-  /* overflow: hidden; */
-  height: inherit;
-}
-
-/* h1 {
-  font-size: 2rem;
-  letter-spacing: -1px;
+  width: 100%;
   position: absolute;
-  margin: 0;
-  top: -4px;
-  right: 5px;
+  background-color: rgba(255,255,255,0.5);
+}
 
-  color: transparent;
-  text-shadow: 0 0 4px white;
-} */
+.not-opaque-wrapper {
+  height: 50%;
+  width: 20%;
+  background-color: rgba(255,255,255,1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.start-sim-container {
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#start-sim-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sim-over-container {
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.canvas-container {
+  z-index: -1;
+}
+
+.canvas-container h1 {
+  position: absolute;
+}
+
+.canvas-container canvas {
+  position: absolute;
+  z-index: -2;
+}
+
+.canvas-text {
+  position: absolute;
+}
 
 .img-loader {
   display: none;

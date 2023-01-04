@@ -138,11 +138,15 @@ class Item {
   }
 }
 
-function createFromPrefs(simPrefs) {
-  // reset any previous game state
+function endSimulation() {
   windowState.items = [];
   windowState.numCollisions = 0;
   cancelAnimationFrame(windowState.previousAnimationRequestId);
+}
+
+function createFromPrefs(simPrefs) {
+  // reset any previous game state
+  endSimulation();
 
   const {
       numRock: numRock, 
@@ -188,7 +192,8 @@ function loop() {
   }
 
   // animation ends once all items are the same type
-  let itemTypes = items.map((item) => item.type);
+  const itemTypes = items.map((item) => item.type);
+  console.log(itemTypes);
   if (itemTypes.every((itemType) => (itemType == undefined || itemType == itemTypes[0]))) {
     //redraw canvas and items one last time to show final state
     ctx.fillStyle = "rgba(255,255,255)"
@@ -201,6 +206,7 @@ function loop() {
     winnerDisplay.textContent = capitalizedType;
     const numCollisionsDisplay = document.querySelector("#num-collisions");
     numCollisionsDisplay.textContent = windowState.numCollisions;
+    showEndScreen();
     return;
   } else {
     windowState.previousAnimationRequestId = requestAnimationFrame(loop);
@@ -224,6 +230,25 @@ function beginSimulation() {
 }
 
 // DOM helpers and listeners
+function showStartForm() {
+  const startFormContainer = document.querySelector(".start-sim-container");
+  startFormContainer.classList.remove("hidden");
+}
+
+function hideStartForm() {
+  const startFormContainer = document.querySelector(".start-sim-container");
+  startFormContainer.classList.add("hidden");
+}
+
+function showEndScreen() {
+  const simEndContainer = document.querySelector(".sim-over-container");
+  simEndContainer.classList.remove("hidden");
+}
+
+function hideEndScreen() {
+  const simEndContainer = document.querySelector(".sim-over-container");
+  simEndContainer.classList.add("hidden");
+}
 
 function getRockSlider() {
   return document.querySelector("input[name='num_rock']");
@@ -238,8 +263,9 @@ function getScissorsSlider() {
 }
 
 const startSimForm = document.getElementById("start-sim-form");
-startSimForm.addEventListener("submit",(event) => {
+startSimForm.addEventListener("submit", (event) => {
   if (event.submitter.name === "start") {
+    hideStartForm();
     beginSimulation();
   } else if (event.submitter.name === "random") {
     getRockSlider().value = random(0, 50);
@@ -250,5 +276,13 @@ startSimForm.addEventListener("submit",(event) => {
     getPaperSlider().value = 25;
     getScissorsSlider().value = 25;
   }
+  event.preventDefault();
+})
+
+const reinitializeSimForm = document.getElementById("reinitialize-sim-form");
+reinitializeSimForm.addEventListener("submit", (event) => {
+  endSimulation();
+  hideEndScreen();
+  showStartForm();
   event.preventDefault();
 })
